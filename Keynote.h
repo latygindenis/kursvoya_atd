@@ -13,6 +13,12 @@ using namespace std;
 
 class Keynote {
     float key;
+public:
+    float getKey() const {
+        return key;
+    }
+
+private:
     long long point;
 public:
     long long int getPoint() const {
@@ -22,12 +28,17 @@ public:
 public:
     float randomfloat()
     {
-        float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
+        float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3));
         return r2;
     }
     Keynote (long long point)
     {
         this->key = randomfloat();
+        this->point = point;
+    }
+    Keynote (float key, long long point)
+    {
+        this->key = key;
         this->point = point;
     }
     Keynote ()

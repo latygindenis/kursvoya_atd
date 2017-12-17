@@ -17,13 +17,13 @@ class ATD {
 
     const char* NOTES_FILE = "notes.bin";
     const char* INDEX_FILE = "index.bin";
-    int SizeOfBlock = 10000;
-    int FreeSpaceInBlock = SizeOfBlock / 10;
+    int SizeOfBlock = 10;
+    int ReserveSpaceInBlock = SizeOfBlock / 10;
     int AmountOfBlock = 1;
 
 public:
     ATD();
-    void add_note(void  *note);
+    void add_note(int note);
     void show_all_note();
 
 };
