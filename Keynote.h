@@ -13,19 +13,25 @@ using namespace std;
 
 class Keynote {
     float key;
+    long long point;
+
+
 public:
+    Keynote & operator=(Keynote &rightKeynote){
+        if (&rightKeynote == this) return *this;//Проверка на самоприсваивание
+         key= rightKeynote.getKey();
+        point = rightKeynote.point;
+        return *this;
+    }
+
     float getKey() const {
         return key;
     }
 
-private:
-    long long point;
-public:
     long long int getPoint() const {
         return point;
     }
 
-public:
     float randomfloat()
     {
         float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3));
@@ -48,7 +54,6 @@ public:
     {
         cout<<"key: " << this->key << " point: "<<point<<endl;
     }
-
 };
 
 

@@ -11,6 +11,31 @@ float randomfloat()
     return r2;
 }
 
+void ATD::moveNotes(int c, long long placeInsert){ //бинарный поиск по блоку
+
+    Keynote kpr, buf;
+    long long size = sizeof(Keynote);
+    fstream iout(INDEX_FILE, ios::binary | ios::in | ios::out);
+    cout<<"tellp"<<iout.tellp()<<endl;
+    iout.seekg(placeInsert, ios::beg);
+    iout.read((char*)&buf, sizeof(Keynote));
+    cout<<"tellp"<<iout.tellp()<<endl;
+    cout<<"tellg"<<iout.tellg()<<endl;
+
+
+    for(int j=c; j<SizeOfBlock-1; j++) {//смещаем все записи
+
+        iout.read((char*)&kpr, sizeof(Keynote));
+        cout<<"tellg"<<iout.tellg()<<endl;
+        iout.seekp(-sizeof(Keynote), ios::cur);
+        cout<<"tellg"<<iout.tellg()<<endl;
+        iout.write((char*)&buf, sizeof(Keynote));
+
+        buf = kpr;
+    }
+    iout.close();
+}
+
 ATD::ATD() {
     ifstream notes_in(NOTES_FILE, ios::binary);
 
@@ -96,9 +121,16 @@ void ATD::add_note(int note) {
     cout<<L<<endl;
     cout<<R<<endl;
     cout<<mid<<endl;
+    index_out.seekp(L*sizeof(Keynote) | ios::beg);
 
-    index_out.seekp(L*sizeof(Keynote));
+    index_out.read((char*)&buf, sizeof(Keynote));
 
+    if (buf.getKey() != -1)
+    {
+        moveNotes(L, L*sizeof(Keynote));
+    }
+
+    index_out.seekp(L*sizeof(Keynote) | ios::beg);
     index_out.write((char*)&newNote, sizeof(Keynote));
     index_out.close();
 }
@@ -116,9 +148,9 @@ void ATD::show_all_note(){
 while (!index_out.eof())
 {
     cout<<index_out.tellg()<<" ";
-
     index_out.read((char*)&mysmallnote, sizeof(Keynote));
     mysmallnote.print();
+
     point = mysmallnote.getPoint();
     if (point>=0)
     {

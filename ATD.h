@@ -25,6 +25,8 @@ public:
     ATD();
     void add_note(int note);
     void show_all_note();
+    void moveNotes(int c, long long placeInsert);
+
 
 };
 
