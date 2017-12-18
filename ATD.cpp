@@ -14,23 +14,13 @@ float randomfloat()
 void ATD::moveNotes(int c, long long placeInsert){ //бинарный поиск по блоку
 
     Keynote kpr, buf;
-    long long size = sizeof(Keynote);
     fstream iout(INDEX_FILE, ios::binary | ios::in | ios::out);
-    cout<<"tellp"<<iout.tellp()<<endl;
     iout.seekg(placeInsert, ios::beg);
     iout.read((char*)&buf, sizeof(Keynote));
-    cout<<"tellp"<<iout.tellp()<<endl;
-    cout<<"tellg"<<iout.tellg()<<endl;
-
-
-    for(int j=c; j<SizeOfBlock-1; j++) {//смещаем все записи
-
+    for(int j=c; j<SizeOfBlock-1; j++) { //смещаем все записи (начиная с места вставки)
         iout.read((char*)&kpr, sizeof(Keynote));
-        cout<<"tellg"<<iout.tellg()<<endl;
         iout.seekp(-sizeof(Keynote), ios::cur);
-        cout<<"tellg"<<iout.tellg()<<endl;
         iout.write((char*)&buf, sizeof(Keynote));
-
         buf = kpr;
     }
     iout.close();
@@ -54,26 +44,9 @@ ATD::ATD() {
         index_out.close();
     }
     notes_in.close();
-
 }
 
 void ATD::add_note(int note) {
-
-//    Keynote buf(100);
-//    fstream index_in(INDEX_FILE, ios::binary | ios::in | ios::out);
-//
-//    cout<<index_in.tellp()<<endl;
-//    index_in.write((char*)&buf, sizeof(Keynote));
-//
-//    Keynote mysmallnote;
-//    index_in.seekg(0, ios::beg);
-//    while (!index_in.eof())
-//    {
-//        cout<<index_in.tellg()<<" ";
-//        index_in.read((char*)&mysmallnote, sizeof(Keynote));
-//        mysmallnote.print();
-//    }
-//    index_in.close();
 
     Keynote buf;
     int size = sizeof(note);
@@ -90,7 +63,6 @@ void ATD::add_note(int note) {
     note_out.write((char*)&note, size);
 
     note_out.close();
-
 
     Keynote newNote(point);
     cout<<newNote.getKey()<<endl;
@@ -145,10 +117,9 @@ void ATD::show_all_note(){
 
     Keynote mysmallnote;
 
-while (!index_out.eof())
+while ( index_out.read((char*)&mysmallnote, sizeof(Keynote)))
 {
     cout<<index_out.tellg()<<" ";
-    index_out.read((char*)&mysmallnote, sizeof(Keynote));
     mysmallnote.print();
 
     point = mysmallnote.getPoint();
