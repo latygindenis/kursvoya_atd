@@ -33,7 +33,11 @@ ATD::ATD() {
 
     if (access(INDEX_FILE, 0) == 0) // проверка на наличие файла индексов
     {
+        fstream index_rd(INDEX_FILE, ios::binary | ios::out | ios::app );
+        AmountOfBlock = int (index_rd.tellg() / (sizeof(Keynote) * SizeOfBlock));
         cout<<"File of index exist"<<endl;
+        index_rd.close();
+
     } else{
         cout<<"File of index not exist"<<endl;
         Keynote trash(-1, -1);
@@ -64,7 +68,7 @@ void ATD::add_note(int note) {
         generateBlock(index_out);
 
     }
-    index_out.seekp(0, ios::beg);
+    index_out.seekp(0, ios::beg);//Начало блока вставки
 
     point = note_out.tellp();
     cout<<"Point: "<<point<<endl;
@@ -160,12 +164,33 @@ void ATD::generateBlock(fstream &fl) {
         cout<<fl.tellp()<<endl;
         fl.write((char*)&trash, sizeof(Keynote));
     }
+}
 
+void ATD::rebaseThisBlock(fstream &fl) {
 
 
 
 }
 
-void ATD::rebaseThisBlock() {
+int ATD::findBlockForInsert(fstream &fl, float key) { //Возвращает указатель на начало нужного блока
+    Keynote buf;
+    int L=0, R = AmountOfBlock, mid=(L+R)/2;
+    if (L==R) { return 0;} //Если один блок
+    while (L < R)
+    {
+        fl.seekp(mid * SizeOfBlock * sizeof(Keynote), ios::beg);
+        fl.read((char*)&buf, sizeof (Keynote));
 
+        if (buf.getKey() > key)
+        {
+            R = mid;
+            mid = (L + R)/2;
+        }
+        if (buf.getKey() < key)
+        {
+            L = mid + 1;
+        }
+        mid = (R + L)/2;
+    }
+    return L * SizeOfBlock * sizeof(Keynote);
 };

@@ -26,10 +26,11 @@ public:
 public:
     ATD();
     void add_note(int note);
+    int findBlockForInsert(fstream &fl, float key);
     void show_all_note();
     void moveNotes(int c, long long placeInsert);
     void generateBlock (fstream &fl); //Добавление пустого блока в конец
-    void rebaseThisBlock();
+    void rebaseThisBlock( fstream &fl);
 };
 
 
