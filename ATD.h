@@ -19,18 +19,19 @@ class ATD {
     const char* INDEX_FILE = "index.bin";
     int SizeOfBlock = 10;
     int ReserveSpaceInBlock = SizeOfBlock / 10;
-    int AmountOfBlock = 1;
+
 public:
+    int AmountOfBlock = 1;
     void setAmountOfBlock(int AmountOfBlock);
 
 public:
     ATD();
     void add_note(int note);
-    int findBlockForInsert(fstream &fl, float key);
+    long long findBlockForInsert(fstream &fl, float key);
     void show_all_note();
     void moveNotes(int c, long long placeInsert);
     void generateBlock (fstream &fl); //Добавление пустого блока в конец
-    void rebaseThisBlock( fstream &fl);
+    void rebaseThisBlock( fstream &fl, long long CurrentBlock);
 };
 
 
