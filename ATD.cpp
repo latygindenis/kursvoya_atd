@@ -11,12 +11,13 @@ float randomfloat()
     return r2;
 }
 
-void ATD::moveNotes(int c, long long placeInsert){ //бинарный поиск по блоку
+void ATD::moveNotes(int c, long long placeInsert){ //Смещение записей
 
     Keynote kpr, buf;
     fstream iout(INDEX_FILE, ios::binary | ios::in | ios::out);
     iout.seekg(placeInsert, ios::beg);
     iout.read((char*)&buf, sizeof(Keynote));
+
     for(int j=c; j<SizeOfBlock-1; j++) { //смещаем все записи (начиная с места вставки)
         iout.read((char*)&kpr, sizeof(Keynote));
         iout.seekp(-sizeof(Keynote), ios::cur);
@@ -25,6 +26,7 @@ void ATD::moveNotes(int c, long long placeInsert){ //бинарный поиск
     }
     iout.close();
 }
+
 
 ATD::ATD() {
     ifstream notes_in(NOTES_FILE, ios::binary);
@@ -54,6 +56,15 @@ void ATD::add_note(int note) {
     float buf_key;
     ofstream note_out(NOTES_FILE, ios::binary | ios::app);
     fstream index_out(INDEX_FILE, ios::binary | ios::in | ios::out);
+    index_out.seekp((SizeOfBlock - 1 )* sizeof(Keynote));
+    index_out.read((char*)&buf, sizeof(Keynote));
+    if (buf.getKey()!=-1)
+    {
+        cout<<"End of block"<<endl;
+        generateBlock(index_out);
+
+    }
+    index_out.seekp(0, ios::beg);
 
     point = note_out.tellp();
     cout<<"Point: "<<point<<endl;
@@ -69,7 +80,7 @@ void ATD::add_note(int note) {
     long long L=0;
     long long R=SizeOfBlock;
     long long mid = R/2;
-    while (L < R)
+    while (L < R) //бинарный поиск по блоку
     {
         index_out.seekg(mid*sizeof(Keynote), ios::beg);
         index_out.read((char*)&buf, sizeof(Keynote));
@@ -117,7 +128,7 @@ void ATD::show_all_note(){
 
     Keynote mysmallnote;
 
-while ( index_out.read((char*)&mysmallnote, sizeof(Keynote)))
+while (index_out.read((char*)&mysmallnote, sizeof(Keynote)))
 {
     cout<<index_out.tellg()<<" ";
     mysmallnote.print();
@@ -133,4 +144,28 @@ while ( index_out.read((char*)&mysmallnote, sizeof(Keynote)))
 }
     index_out.close();
     note_out.close();
+}
+
+void ATD::setAmountOfBlock(int AmountOfBlock) {
+    ATD::AmountOfBlock = AmountOfBlock;
+}
+
+void ATD::generateBlock(fstream &fl) {
+    fl.seekp(SizeOfBlock* sizeof(Keynote)*AmountOfBlock);
+    this->AmountOfBlock++;
+
+    Keynote trash(-1, -1);
+    for (int i=0; i<SizeOfBlock; i++)
+    {
+        cout<<fl.tellp()<<endl;
+        fl.write((char*)&trash, sizeof(Keynote));
+    }
+
+
+
+
+}
+
+void ATD::rebaseThisBlock() {
+
 };

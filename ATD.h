@@ -20,14 +20,16 @@ class ATD {
     int SizeOfBlock = 10;
     int ReserveSpaceInBlock = SizeOfBlock / 10;
     int AmountOfBlock = 1;
+public:
+    void setAmountOfBlock(int AmountOfBlock);
 
 public:
     ATD();
     void add_note(int note);
     void show_all_note();
     void moveNotes(int c, long long placeInsert);
-
-
+    void generateBlock (fstream &fl); //Добавление пустого блока в конец
+    void rebaseThisBlock();
 };
 
 
