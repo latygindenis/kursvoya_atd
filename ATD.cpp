@@ -84,8 +84,10 @@ void ATD::add_note(int note) {
         generateBlock(index_out);
         rebaseThisBlock(index_out, BlockForInsert);
     }
-
+    BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
+    cout<<"Block for insert: "<<BlockForInsert<<endl;
     index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
+
 
 
     long long L=0;
@@ -205,6 +207,11 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
 long long ATD::findBlockForInsert(fstream &fl, float key) { //Возвращает указатель на начало нужного блока
     Keynote buf;
     int L=0, R = AmountOfBlock - 1, mid=(L+R)/2;
+    if (mid == 0 && AmountOfBlock != 1)
+    {
+        mid+=1;
+    }
+
     if (L==R) { return 0;} //Если один блок
     while (L < R)
     {
@@ -213,12 +220,12 @@ long long ATD::findBlockForInsert(fstream &fl, float key) { //Возвращае
 
         if (buf.getKey() > key)
         {
-            R = mid;
+            R = mid - 1;
             mid = (L + R)/2;
         }
-        if (buf.getKey() < key)
+        if ( buf.getKey() < key)
         {
-            L = mid + 1;
+            L = mid;
         }
         mid = (R + L)/2;
     }
