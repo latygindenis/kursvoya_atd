@@ -52,7 +52,7 @@ public:
     }
     void print()
     {
-        cout<<"key: " << this->key << " point: "<<point<<endl;
+        cout<<"key: " << this->key << " point: "<<point;
     }
 };
 

@@ -77,11 +77,8 @@ void ATD::add_note(int note) {
         cout<<"End of block"<<endl;
         generateBlock(index_out);
         rebaseThisBlock(index_out, BlockForInsert);
-        show_all_note();
     }
-    cout<<"dddd"<<endl;
     BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
-    cout<<"dddd"<<endl;
     cout<<"Block for insert: "<<BlockForInsert<<endl;
     index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
     long long L=0;
@@ -89,7 +86,6 @@ void ATD::add_note(int note) {
     long long mid = R/2;
     while (L < R) //бинарный поиск по блоку
     {
-        cout<<1<<endl;
         index_out.seekg(mid*sizeof(Keynote) + BlockForInsert, ios::beg);
         index_out.read((char*)&buf, sizeof(Keynote));
         cout<<"buf_key "<<buf.getKey()<<endl;
@@ -129,27 +125,31 @@ void ATD::show_all_note(){
     index_out.seekg (0, ios::beg);
 
     Keynote mysmallnote;
-
+    int design = 0;
 while (index_out.read((char*)&mysmallnote, sizeof(Keynote)))
 {
-    cout<<index_out.tellg()<<" ";
-    mysmallnote.print();
+    if(design%SizeOfBlock == 0)
+    {
+        cout<<"-------------------------"<<endl;
+    }
 
+
+    cout<<index_out.tellg() - sizeof(Keynote)<<" ";
+    mysmallnote.print();
     point = mysmallnote.getPoint();
     if (point>=0)
     {
         note_out.seekg(point);
         note_out.read((char*)&size , sizeof(int));
         note_out.read((char*)&myNote, size);
-        cout<<myNote<<endl;
+        cout<<" "<<myNote;
     }
+    cout<<endl;
+    design ++;
 }
+    cout<<"-------------------------"<<endl;
     index_out.close();
     note_out.close();
-}
-
-void ATD::setAmountOfBlock(int AmountOfBlock) {
-    ATD::AmountOfBlock = AmountOfBlock;
 }
 
 void ATD::generateBlock(fstream &fl) {
@@ -165,8 +165,6 @@ void ATD::generateBlock(fstream &fl) {
 }
 
 void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
-
-    cout<<"#1"<<endl;
     Keynote buf, buf2, trash (-1, -1);
     long long CurBlockReabase;
     long long NextBlockReabase;
@@ -179,19 +177,16 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
 
     if (OtherBlockRebase == CurrentBlock)
     {
-        cout<<"#2"<<endl;
         fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
         CurBlockReabase = fl.tellp(); //указатель на перемещаемый блок
-
 
         for (int i=0; i<SizeOfBlock/2; i++)
         {
 
             fl.seekp(CurBlockReabase, ios::beg);
             fl.read((char*)&buf, sizeof (Keynote));
-            cout<<"For"<<endl;
-            cout<<i<<" "<<buf.getKey()<<" "<<NextBlockReabase;
             fl.seekp(-sizeof(Keynote), ios::cur);
+
             fl.write((char*)&trash, sizeof (Keynote));
             CurBlockReabase += sizeof(Keynote);
 
@@ -199,15 +194,12 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
             fl.write((char*)&buf, sizeof (Keynote));
             fl.seekp(-sizeof(Keynote), ios::cur);
             fl.read((char*)&buf2, sizeof (Keynote));
-            cout<<" "<<buf2.getKey()<<endl;
             NextBlockReabase += sizeof(Keynote);
         }
     }
     else{
-        cout<<"#3"<<endl;
         while (OtherBlockRebase != CurrentBlock)
         {
-            cout<<"While"<<endl;
             for (int i = 0; i<SizeOfBlock; i++)
             {
                 fl.seekp(OtherBlockRebase, ios::beg);
@@ -221,14 +213,8 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
                 NextBlockReabase += sizeof(Keynote);
 
             }
-            cout<<OtherBlockRebase<<endl;
-            cout<<NextBlockReabase<<endl;
-            getchar();
             OtherBlockRebase -= sizeof(Keynote)*SizeOfBlock*2;
             NextBlockReabase -= sizeof(Keynote)*SizeOfBlock*2;
-            cout<<OtherBlockRebase<<endl;
-            cout<<NextBlockReabase<<endl;
-            getchar();
         }
 
         fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
@@ -311,7 +297,7 @@ int ATD::findByKey(float key) {
         cout<<"buf_key "<<buf.getKey()<<endl;
         cout<<"mid "<<mid<<endl;
 
-        if (fabs(buf.getKey() - key) <0.00001)
+        if (fabs(buf.getKey() - key) <0.000001)
         {
             int value;
             cout<<key<<endl;
@@ -346,10 +332,10 @@ int ATD::findByKey(float key) {
     cout<<buf.getKey()<<endl;
     cout<<key<<endl;
 
-    if (fabs(buf.getKey() - key) <0.0000005)
+    if (fabs(buf.getKey() - key) <0.000001)
     {
         int value;
-        cout<<key<<endl;
+        cout<<"base key:"<<key<<endl;
         cout<<"key: "<<buf.getKey()<<" founded"<<endl;
         note_out.seekp(buf.getPoint());
         note_out.read((char*)&value, sizeof(int));
