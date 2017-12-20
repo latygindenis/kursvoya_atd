@@ -88,6 +88,9 @@ void ATD::add_note(int note) {
     cout<<"dddd"<<endl;
 
     BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
+
+    cout<<"dddd"<<endl;
+
     cout<<"Block for insert: "<<BlockForInsert<<endl;
     index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
 
@@ -98,6 +101,7 @@ void ATD::add_note(int note) {
     long long mid = R/2;
     while (L < R) //бинарный поиск по блоку
     {
+        cout<<1<<endl;
         index_out.seekg(mid*sizeof(Keynote) + BlockForInsert, ios::beg);
         index_out.read((char*)&buf, sizeof(Keynote));
         cout<<"buf_key "<<buf.getKey()<<endl;
@@ -181,7 +185,7 @@ void ATD::generateBlock(fstream &fl) {
 void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
 
     cout<<"#1"<<endl;
-    Keynote buf, trash (-1, -1);
+    Keynote buf, buf2, trash (-1, -1);
     long long CurBlockReabase;
     long long NextBlockReabase;
     long long OtherBlockRebase;
@@ -200,16 +204,20 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
 
         for (int i=0; i<SizeOfBlock/2; i++)
         {
-            cout<<"For"<<endl;
-            cout<<i<<" "<<buf.getKey()<<endl;
+
             fl.seekp(CurBlockReabase, ios::beg);
             fl.read((char*)&buf, sizeof (Keynote));
+            cout<<"For"<<endl;
+            cout<<i<<" "<<buf.getKey()<<" "<<NextBlockReabase;
             fl.seekp(-sizeof(Keynote), ios::cur);
             fl.write((char*)&trash, sizeof (Keynote));
             CurBlockReabase += sizeof(Keynote);
 
             fl.seekp(NextBlockReabase, ios::beg);
             fl.write((char*)&buf, sizeof (Keynote));
+            fl.seekp(-sizeof(Keynote), ios::cur);
+            fl.read((char*)&buf2, sizeof (Keynote));
+            cout<<" "<<buf2.getKey()<<endl;
             NextBlockReabase += sizeof(Keynote);
         }
     }
@@ -248,13 +256,16 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
         {
             fl.seekp(CurBlockReabase, ios::beg);
             fl.read((char*)&buf, sizeof (Keynote));
-            cout<<i<<" "<<buf.getKey()<<endl;
+            cout<<i<<" "<<buf.getKey()<<" "<<NextBlockReabase<<endl;
             fl.seekp(-sizeof(Keynote), ios::cur);
             fl.write((char*)&trash, sizeof (Keynote));
             CurBlockReabase += sizeof(Keynote);
 
             fl.seekp(NextBlockReabase, ios::beg);
             fl.write((char*)&buf, sizeof (Keynote));
+            fl.seekp(-sizeof(Keynote), ios::cur);
+            fl.read((char*)&buf2, sizeof (Keynote));
+            cout<<" "<<buf2.getKey()<<endl;
             NextBlockReabase += sizeof(Keynote);
         }
 
@@ -265,14 +276,11 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
 long long ATD::findBlockForInsert(fstream &fl, float key) { //Возвращает указатель на начало нужного блока
     Keynote buf;
     int L=0, R = AmountOfBlock - 1, mid=(L+R)/2;
-    if (mid == 0 && AmountOfBlock != 1)
-    {
-        mid+=1;
-    }
 
     if (L==R) { return 0;} //Если один блок
     while (L < R)
     {
+        cout<<1<<endl;
         fl.seekp(mid * SizeOfBlock * sizeof(Keynote), ios::beg);
         fl.read((char*)&buf, sizeof (Keynote));
 
@@ -283,9 +291,22 @@ long long ATD::findBlockForInsert(fstream &fl, float key) { //Возвращае
         }
         if ( buf.getKey() < key)
         {
-            L = mid;
+            L = mid + 1;
+            mid = (R + L)/2;
         }
-        mid = (R + L)/2;
+
     }
+    if (L<0)
+    {
+        return 0;
+    }
+    fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
+    fl.read((char*)&buf, sizeof (Keynote));
+    if (buf.getKey() > key && L >0)
+    {
+        L--;
+    }
+    cout<<"L "<<L<<endl;
+
     return L * SizeOfBlock * sizeof(Keynote);
 };
