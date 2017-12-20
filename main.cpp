@@ -6,6 +6,6 @@ int main() {
     ATD myBase;
     int a=999, b=875;
     myBase.add_note(a);
-    myBase.show_all_note();  //баг с двойным выведением
+    myBase.show_all_note();
     return 0;
 }

@@ -83,7 +83,10 @@ void ATD::add_note(int note) {
         cout<<"End of block"<<endl;
         generateBlock(index_out);
         rebaseThisBlock(index_out, BlockForInsert);
+        show_all_note();
     }
+    cout<<"dddd"<<endl;
+
     BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
     cout<<"Block for insert: "<<BlockForInsert<<endl;
     index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
@@ -164,7 +167,7 @@ void ATD::setAmountOfBlock(int AmountOfBlock) {
 }
 
 void ATD::generateBlock(fstream &fl) {
-    fl.seekp(SizeOfBlock* sizeof(Keynote)*AmountOfBlock);
+    fl.seekp(SizeOfBlock*sizeof(Keynote)*AmountOfBlock);
     this->AmountOfBlock++;
 
     Keynote trash(-1, -1);
@@ -177,20 +180,28 @@ void ATD::generateBlock(fstream &fl) {
 
 void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
 
-    cout<<"sdsdddcdcdcdc"<<endl;
+    cout<<"#1"<<endl;
     Keynote buf, trash (-1, -1);
     long long CurBlockReabase;
     long long NextBlockReabase;
+    long long OtherBlockRebase;
 
-    fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
-    CurBlockReabase = fl.tellp(); //указатель на перемещаемый блок
+
     fl.seekp(0, ios::end);
     NextBlockReabase = fl.tellp() - SizeOfBlock * sizeof(Keynote); //Указатель на начало пустого блока
+    OtherBlockRebase = NextBlockReabase - SizeOfBlock*sizeof(Keynote);
 
-    if (AmountOfBlock == 2)
+    if (OtherBlockRebase == CurrentBlock)
     {
+        cout<<"#2"<<endl;
+        fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
+        CurBlockReabase = fl.tellp(); //указатель на перемещаемый блок
+
+
         for (int i=0; i<SizeOfBlock/2; i++)
         {
+            cout<<"For"<<endl;
+            cout<<i<<" "<<buf.getKey()<<endl;
             fl.seekp(CurBlockReabase, ios::beg);
             fl.read((char*)&buf, sizeof (Keynote));
             fl.seekp(-sizeof(Keynote), ios::cur);
@@ -201,6 +212,53 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
             fl.write((char*)&buf, sizeof (Keynote));
             NextBlockReabase += sizeof(Keynote);
         }
+    }
+    else{
+        cout<<"#3"<<endl;
+        while (OtherBlockRebase != CurrentBlock)
+        {
+            cout<<"While"<<endl;
+            for (int i = 0; i<SizeOfBlock; i++)
+            {
+                fl.seekp(OtherBlockRebase, ios::beg);
+                fl.read((char*)&buf, sizeof (Keynote));
+                fl.seekp(-sizeof(Keynote), ios::cur);
+                fl.write((char*)&trash, sizeof (Keynote));
+                OtherBlockRebase += sizeof(Keynote);
+
+                fl.seekp(NextBlockReabase, ios::beg);
+                fl.write((char*)&buf, sizeof (Keynote));
+                NextBlockReabase += sizeof(Keynote);
+
+            }
+            cout<<OtherBlockRebase<<endl;
+            cout<<NextBlockReabase<<endl;
+            getchar();
+            OtherBlockRebase -= sizeof(Keynote)*SizeOfBlock*2;
+            NextBlockReabase -= sizeof(Keynote)*SizeOfBlock*2;
+            cout<<OtherBlockRebase<<endl;
+            cout<<NextBlockReabase<<endl;
+            getchar();
+        }
+
+        fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
+        CurBlockReabase = fl.tellp(); //указатель на перемещаемый блок
+
+        for (int i=0; i<SizeOfBlock/2; i++)
+        {
+            fl.seekp(CurBlockReabase, ios::beg);
+            fl.read((char*)&buf, sizeof (Keynote));
+            cout<<i<<" "<<buf.getKey()<<endl;
+            fl.seekp(-sizeof(Keynote), ios::cur);
+            fl.write((char*)&trash, sizeof (Keynote));
+            CurBlockReabase += sizeof(Keynote);
+
+            fl.seekp(NextBlockReabase, ios::beg);
+            fl.write((char*)&buf, sizeof (Keynote));
+            NextBlockReabase += sizeof(Keynote);
+        }
+
+
     }
 }
 
