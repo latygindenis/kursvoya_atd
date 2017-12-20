@@ -11,7 +11,8 @@ int main() {
 
     myBase.add_note(785);
     myBase.show_all_note();
-    myBase.findByKey(0.274076);
+    myBase.findValueByKey(0.274076);
+    myBase.deleteValueByKey(0.274076);
 
     return 0;
 }

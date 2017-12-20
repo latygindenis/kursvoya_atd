@@ -24,12 +24,15 @@ class ATD {
     void moveNotes(int c, long long placeInsert); //Смещение записей в блоке
     void generateBlock (fstream &fl); //Добавление пустого блока в конец
     void rebaseThisBlock(fstream &fl, long long CurrentBlock); //Перестройка индексного файла
+    long long binaryBlockSearch(fstream &fl, long long CurrentBlock, float key);
 
 public:
     ATD();
     void add_note(int note); //Добавление записи в АТД
     void show_all_note(); //Печать всех записей в индексном файле и значений в файле записей
-    int findByKey (float key);
+    int findValueByKey(float key);
+    void deleteValueByKey(float key);
+
 };
 
 

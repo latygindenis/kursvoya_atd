@@ -4,13 +4,6 @@
 
 #include "ATD.h"
 
-
-float randomfloat()
-{
-    float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
-    return r2;
-}
-
 void ATD::moveNotes(int c, long long placeInsert){ //Смещение записей
 
     Keynote kpr, buf;
@@ -278,14 +271,62 @@ long long ATD::findBlockForInsert(fstream &fl, float key) { //Возвращае
 
     return L * SizeOfBlock * sizeof(Keynote);
 }
+long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key) {
+    Keynote buf;
+    long long L=0;
+    long long R=SizeOfBlock-1;
+    long long mid = R/2;
+    while (L < R) //бинарный поиск по блоку
+    {
+        fl.seekg(mid*sizeof(Keynote) + CurrentBlock, ios::beg);
+        fl.read((char*)&buf, sizeof(Keynote));
+        if (fabs(buf.getKey() - key) < 0.000001)
+        {
+            cout<<key<<endl;
+            cout<<"key: "<<buf.getKey()<<" founded"<<endl;
+            return fl.tellp() - sizeof(Keynote);
 
-int ATD::findByKey(float key) {
+        }
+        if (buf.getKey() == -1 or  buf.getKey() > key)
+        {
+            R = mid - 1;
+            mid = (R+L)/2;
+
+        }
+        if (buf.getKey() < key && buf.getKey() != -1)
+        {
+
+            L = mid + 1;
+            mid = (R + L)/2;
+        }
+    }
+    fl.seekp(L*sizeof(Keynote)  + CurrentBlock, ios::beg);
+    fl.read((char*)&buf, sizeof(Keynote));
+    cout<<buf.getKey()<<endl;
+    cout<<key<<endl;
+
+    if (fabs(buf.getKey() - key) <0.000001)
+    {
+        int value;
+        cout<<"base key:"<<key<<endl;
+        cout<<"key: "<<buf.getKey()<<" founded"<<endl;
+        return fl.tellp() - sizeof(Keynote);
+    }
+    else
+    {
+        cout<<"Not found key"<<endl;
+    }
+    return -1;
+};
+
+int ATD::findValueByKey(float key) {
     Keynote buf;
     fstream index_out(INDEX_FILE, ios::binary | ios::out |ios::in);
     fstream note_out (NOTES_FILE, ios::binary | ios::out |ios::in);
 
     long long findedBlock = findBlockForInsert(index_out, key);
     cout<<"findedBlock: "<<findedBlock<<endl;
+
 
     long long L=0;
     long long R=SizeOfBlock-1;
@@ -297,7 +338,7 @@ int ATD::findByKey(float key) {
         cout<<"buf_key "<<buf.getKey()<<endl;
         cout<<"mid "<<mid<<endl;
 
-        if (fabs(buf.getKey() - key) <0.000001)
+        if (fabs(buf.getKey() - key) < 0.000001)
         {
             int value;
             cout<<key<<endl;
@@ -350,4 +391,22 @@ int ATD::findByKey(float key) {
     }
     note_out.close();
     return 0;
-};
+}
+
+void ATD::deleteValueByKey(float key) { //Пока находим указатель на нужный к удалнию элемент
+
+    fstream index_out (INDEX_FILE, ios::binary | ios::out | ios::in);
+    fstream notes_out (NOTES_FILE, ios::binary | ios::out | ios::in);
+
+
+    long long findedBlock = findBlockForInsert(index_out, key);
+    cout<<"foundedBlock: "<<findedBlock<<endl;
+    long long foundedIndexPoint = binaryBlockSearch(index_out, findedBlock, key);
+    cout<<"foundedIndexPoint: "<<foundedIndexPoint<<endl;
+
+    if (foundedIndexPoint < 0)
+    {
+        cout<<"Not founded index :( for deleting"<<endl;
+    }
+}
+
