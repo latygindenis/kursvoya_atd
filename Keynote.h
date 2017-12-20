@@ -4,9 +4,10 @@
 
 #ifndef KURSVOYA_ATD_KEYNOTE_H
 #define KURSVOYA_ATD_KEYNOTE_H
-#include <ctime>
+
 #include <cstdlib>
 #include <iostream>
+#include <random>
 
 using namespace std;
 
@@ -19,7 +20,7 @@ class Keynote {
 public:
     Keynote & operator=(Keynote &rightKeynote){
         if (&rightKeynote == this) return *this;//Проверка на самоприсваивание
-         key= rightKeynote.getKey();
+        key= rightKeynote.getKey();
         point = rightKeynote.point;
         return *this;
     }
@@ -32,14 +33,11 @@ public:
         return point;
     }
 
-    float randomfloat()
-    {
-        float r2 = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3));
-        return r2;
-    }
     Keynote (long long point)
     {
-        this->key = randomfloat();
+        mt19937 gen(time(0));
+        uniform_real_distribution<float> urd(0, 5); //Генерация случайных вещественных чисел
+        this->key = urd(gen);
         this->point = point;
     }
     Keynote (float key, long long point)
@@ -49,6 +47,7 @@ public:
     }
     Keynote ()
     {
+
     }
     void print()
     {

@@ -11,7 +11,7 @@
 #include <string>
 #include <ctime>
 #include <cmath>
-
+#include "Keynote.h"
 
 using namespace std;
 class ATD {
@@ -27,7 +27,6 @@ class ATD {
 
 public:
     ATD();
-
     void add_note(int note); //Добавление записи в АТД
     void show_all_note(); //Печать всех записей в индексном файле и значений в файле записей
     int findByKey (float key);
