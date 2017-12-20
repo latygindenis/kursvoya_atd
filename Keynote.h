@@ -24,7 +24,7 @@ public:
         return *this;
     }
 
-    float getKey() const {
+    float getKey() {
         return key;
     }
 

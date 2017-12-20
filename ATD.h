@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string>
 #include <ctime>
+#include <math.h>
 
 
 using namespace std;
@@ -26,12 +27,13 @@ public:
 
 public:
     ATD();
-    void add_note(int note);
-    long long findBlockForInsert(fstream &fl, float key);
-    void show_all_note();
-    void moveNotes(int c, long long placeInsert);
+    void add_note(int note); //Добавление записи в АТД
+    long long findBlockForInsert(fstream &fl, float key); //Поиск блока для вставки записи
+    void show_all_note(); //Печать всех записей в индексном файле и значений в файле записей
+    void moveNotes(int c, long long placeInsert); //Смещение записей в блоке
     void generateBlock (fstream &fl); //Добавление пустого блока в конец
-    void rebaseThisBlock( fstream &fl, long long CurrentBlock);
+    void rebaseThisBlock(fstream &fl, long long CurrentBlock); //Перестройка индексного файла
+    int findByKey (float key);
 };
 
 

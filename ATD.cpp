@@ -60,24 +60,18 @@ void ATD::add_note(int note) {
     float buf_key;
     ofstream note_out(NOTES_FILE, ios::binary | ios::app);
     fstream index_out(INDEX_FILE, ios::binary | ios::in | ios::out);
-
     point = note_out.tellp();
     cout<<"Point: "<<point<<endl;
     cout<<note<<endl;
-
     note_out.write((char*)&size, sizeof(int));
     note_out.write((char*)&note, size);
-
     note_out.close();
-
     Keynote newNote(point);
     long long BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
     cout<<"Block for insert: "<<BlockForInsert<<endl;
     cout<<newNote.getKey()<<endl;
-
     index_out.seekp((SizeOfBlock - 1 )* sizeof(Keynote) + BlockForInsert ); //В конец блока
     index_out.read((char*)&buf, sizeof(Keynote)); //Считываем последнюю запись
-
     if (buf.getKey()!=-1)//проверяем мусор запись или нет
     {
         cout<<"End of block"<<endl;
@@ -86,16 +80,10 @@ void ATD::add_note(int note) {
         show_all_note();
     }
     cout<<"dddd"<<endl;
-
     BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
-
     cout<<"dddd"<<endl;
-
     cout<<"Block for insert: "<<BlockForInsert<<endl;
     index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
-
-
-
     long long L=0;
     long long R=SizeOfBlock;
     long long mid = R/2;
@@ -106,35 +94,29 @@ void ATD::add_note(int note) {
         index_out.read((char*)&buf, sizeof(Keynote));
         cout<<"buf_key "<<buf.getKey()<<endl;
         cout<<"mid "<<mid<<endl;
-
         if (buf.getKey() == -1 or  buf.getKey() > newNote.getKey())
         {
             R = mid;
             mid = (R+L)/2;
-
         }
         if (buf.getKey() < newNote.getKey() && buf.getKey() != -1)
         {
-
             L = mid + 1;
             mid = (R + L)/2;
         }
     }
-
     cout<<L<<endl;
     cout<<R<<endl;
     cout<<mid<<endl;
     index_out.seekp(L*sizeof(Keynote) + BlockForInsert| ios::beg);
-
     index_out.read((char*)&buf, sizeof(Keynote));
-
     if (buf.getKey() != -1)
     {
         moveNotes(L, L*sizeof(Keynote) + BlockForInsert);
     }
-
     index_out.seekp(L*sizeof(Keynote) + BlockForInsert | ios::beg);
     index_out.write((char*)&newNote, sizeof(Keynote));
+
     index_out.close();
 }
 void ATD::show_all_note(){
@@ -309,4 +291,77 @@ long long ATD::findBlockForInsert(fstream &fl, float key) { //Возвращае
     cout<<"L "<<L<<endl;
 
     return L * SizeOfBlock * sizeof(Keynote);
+}
+
+int ATD::findByKey(float key) {
+    Keynote buf;
+    fstream index_out(INDEX_FILE, ios::binary | ios::out |ios::in);
+    fstream note_out (NOTES_FILE, ios::binary | ios::out |ios::in);
+
+    long long findedBlock = findBlockForInsert(index_out, key);
+    cout<<"findedBlock: "<<findedBlock<<endl;
+
+    long long L=0;
+    long long R=SizeOfBlock-1;
+    long long mid = R/2;
+    while (L < R) //бинарный поиск по блоку
+    {
+        index_out.seekg(mid*sizeof(Keynote) + findedBlock, ios::beg);
+        index_out.read((char*)&buf, sizeof(Keynote));
+        cout<<"buf_key "<<buf.getKey()<<endl;
+        cout<<"mid "<<mid<<endl;
+
+        if (fabs(buf.getKey() - key) <0.00001)
+        {
+            int value;
+            cout<<key<<endl;
+            cout<<"key: "<<buf.getKey()<<" founded"<<endl;
+            note_out.seekp(buf.getPoint());
+            note_out.read((char*)&value, sizeof(int));
+            note_out.read((char*)&value, sizeof(int));
+            cout<<"Finded value: "<<value<<endl;
+            note_out.close();
+            index_out.close();
+            return value;
+
+        }
+        if (buf.getKey() == -1 or  buf.getKey() > key)
+        {
+            R = mid - 1;
+            mid = (R+L)/2;
+
+        }
+        if (buf.getKey() < key && buf.getKey() != -1)
+        {
+
+            L = mid + 1;
+            mid = (R + L)/2;
+        }
+    }
+    cout<<L<<endl;
+
+    index_out.seekp(L*sizeof(Keynote)  + findedBlock, ios::beg);
+    index_out.read((char*)&buf, sizeof(int));
+    index_out.close();
+    cout<<buf.getKey()<<endl;
+    cout<<key<<endl;
+
+    if (fabs(buf.getKey() - key) <0.0000005)
+    {
+        int value;
+        cout<<key<<endl;
+        cout<<"key: "<<buf.getKey()<<" founded"<<endl;
+        note_out.seekp(buf.getPoint());
+        note_out.read((char*)&value, sizeof(int));
+        note_out.read((char*)&value, sizeof(int));
+        cout<<"Finded value: "<<value<<endl;
+        note_out.close();
+        return value;
+    }
+    else
+    {
+        cout<<"Not found key"<<endl;
+    }
+    note_out.close();
+    return 0;
 };
