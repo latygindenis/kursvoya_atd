@@ -41,7 +41,6 @@ public:
     {
         this->key = urd(gen);
         this->point = point;
-        cout<<"Gener key: "<<this->key<<endl;
     }
     Keynote (float key, long long point)
     {

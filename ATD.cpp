@@ -286,7 +286,7 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
     {
         fl.seekg(mid*sizeof(Keynote) + CurrentBlock, ios::beg);
         fl.read((char*)&buf, sizeof(Keynote));
-        if (fabs(buf.getKey() - key) < 0.000001)
+        if (fabs(buf.getKey() - key) < 0.000005)
         {
             cout<<key<<endl;
             cout<<"key: "<<buf.getKey()<<" founded"<<endl;
@@ -297,11 +297,9 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
         {
             R = mid - 1;
             mid = (R+L)/2;
-
         }
         if (buf.getKey() < key && buf.getKey() != -1)
         {
-
             L = mid + 1;
             mid = (R + L)/2;
         }
@@ -310,8 +308,9 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
     fl.read((char*)&buf, sizeof(Keynote));
     cout<<buf.getKey()<<endl;
     cout<<key<<endl;
+    cout<<fabs(buf.getKey() - key)<<endl;
 
-    if (fabs(buf.getKey() - key) <0.000001)
+    if (fabs(buf.getKey() - key) <0.000005)
     {
         int value;
         cout<<"base key:"<<key<<endl;
@@ -320,17 +319,75 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
     }
     else
     {
+
         cout<<"Not found key"<<endl;
     }
     return -1;
 };
 
+long long ATD::findBlockforFind(fstream &fl, float key)
+{
+    Keynote buf;
+    int L=0, R = AmountOfBlock - 1, mid=(L+R)/2;
+
+    if (L==R) { return 0;} //Если один блок
+    while (L < R)
+    {
+        fl.seekp(mid * SizeOfBlock * sizeof(Keynote), ios::beg);
+        fl.read((char*)&buf, sizeof (Keynote));
+
+        if (fabs(buf.getKey() - key) < 0.00001)
+        {
+            L = mid;
+            R = -1;
+        }
+        else if (buf.getKey() > key)
+        {
+            R = mid - 1;
+            mid = (L + R)/2;
+        }
+        else if ( buf.getKey() < key)
+        {
+            L = mid + 1;
+            mid = (R + L)/2;
+        }
+    }
+    if (L<0)
+    {
+        return 0;
+    }
+    cout<<"Block L: "<<L<<endl;
+    cout<<"Block R: "<<R<<endl;
+    cout<<buf.getKey()<<endl;
+    cout<<key<<endl;
+
+    fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
+    fl.read((char*)&buf, sizeof (Keynote));
+
+    if (buf.getKey() - key <  0.00001)
+    {
+
+    }
+
+    else if (L < AmountOfBlock -1 or buf.getKey() - key >=  0.00001)
+    {
+        L--;
+    }
+
+    cout<<"Block L: "<<L<<endl;
+    fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
+    fl.read((char*)&buf, sizeof (Keynote));
+    return L * SizeOfBlock * sizeof(Keynote);
+
+}
+
 int ATD::findValueByKey(float key) {
     Keynote buf;
+    long long foundedPoint;
     fstream index_out(INDEX_FILE, ios::binary | ios::out |ios::in);
     fstream note_out (NOTES_FILE, ios::binary | ios::out |ios::in);
 
-    long long findedBlock = findBlockForInsert(index_out, key);
+    long long findedBlock = findBlockforFind(index_out, key);
     cout<<"findedBlock: "<<findedBlock<<endl;
 
 
@@ -344,10 +401,11 @@ int ATD::findValueByKey(float key) {
         cout<<"buf_key "<<buf.getKey()<<endl;
         cout<<"mid "<<mid<<endl;
 
-        if (fabs(buf.getKey() - key) < 0.000001)
+        if (fabs(buf.getKey() - key) < 0.000005)
         {
             int value;
-            cout<<key<<endl;
+            cout<<"Founded point: "<<index_out.tellp() - sizeof(Keynote)<<endl;
+            cout<<"base key:"<<key<<endl;
             cout<<"key: "<<buf.getKey()<<" founded"<<endl;
             note_out.seekp(buf.getPoint());
             note_out.read((char*)&value, sizeof(int));
@@ -373,14 +431,17 @@ int ATD::findValueByKey(float key) {
     }
     cout<<L<<endl;
     index_out.seekp(L*sizeof(Keynote)  + findedBlock, ios::beg);
+    foundedPoint = index_out.tellp();
     index_out.read((char*)&buf, sizeof(int));
+
     index_out.close();
     cout<<buf.getKey()<<endl;
     cout<<key<<endl;
 
-    if (fabs(buf.getKey() - key) <0.000001)
+    if (fabs(buf.getKey() - key) <0.000005)
     {
         int value;
+        cout<<"Founded point: "<<foundedPoint<<endl;
         cout<<"base key:"<<key<<endl;
         cout<<"key: "<<buf.getKey()<<" founded"<<endl;
         note_out.seekp(buf.getPoint());

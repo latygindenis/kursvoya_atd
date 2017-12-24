@@ -28,13 +28,14 @@ class ATD {
     void generateBlock (fstream &fl); //Добавление пустого блока в конец
     void rebaseThisBlock(fstream &fl, long long CurrentBlock); //Перестройка индексного файла
     long long binaryBlockSearch(fstream &fl, long long CurrentBlock, float key);
-
+    long long int findBlockforFind(fstream &fl, float key);
 public:
     ATD();
     void add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note); //Добавление записи в АТД
     void show_all_note(); //Печать всех записей в индексном файле и значений в файле записей
     int findValueByKey(float key);
     void deleteValueByKey(float key);
+
 
 };
 
