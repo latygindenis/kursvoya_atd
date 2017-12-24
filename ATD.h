@@ -19,16 +19,18 @@ using namespace std;
 class ATD {
     const char* NOTES_FILE = "notes.bin";
     const char* INDEX_FILE = "index.bin";
-    int SizeOfBlock = 10;
+    int SizeOfBlock = 1000;
     int AmountOfBlock = 1;
 
 
     long long findBlockForInsert(fstream &fl, float key); //Поиск блока для вставки записи
+    void deleteEmptyBlock(fstream &fl, long long beginEmptyBlock);
     void moveNotes(int c, long long placeInsert); //Смещение записей в блоке
     void generateBlock (fstream &fl); //Добавление пустого блока в конец
     void rebaseThisBlock(fstream &fl, long long CurrentBlock); //Перестройка индексного файла
-    long long binaryBlockSearch(fstream &fl, long long CurrentBlock, float key);
-    long long int findBlockforFind(fstream &fl, float key);
+    long long binaryBlockSearch(fstream &fl, long long CurrentBlock, float key); //
+    long long int findBlockforFind(fstream &fl, float key); //Поиск блока для поиска
+
 public:
     ATD();
     void add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note); //Добавление записи в АТД
