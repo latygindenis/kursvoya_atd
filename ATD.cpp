@@ -467,7 +467,8 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
     cout<<"foundedBlock: "<<findedBlock<<endl;
     long long foundedIndexPoint = binaryBlockSearch(index_out, findedBlock, key);
     cout<<"foundedIndexPoint: "<<foundedIndexPoint<<endl;
-    index_out.seekp(findedBlock * sizeof(Keynote) + foundedIndexPoint, ios::beg);
+
+    index_out.seekp(foundedIndexPoint, ios::beg);
     index_out.read((char*)&buf, sizeof(Keynote));
     index_out.seekp(-sizeof(Keynote), ios::cur);
 
@@ -481,6 +482,7 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
     else {
         cout<<"ff"<<buf.getKey()<<endl;
         cout<<posDel<<endl;
+        cout<<index_out.tellp()<<endl;
         notes_out.seekp(buf.getPoint(), ios::beg);
         notes_out.write((char*)&size, sizeof(int)); //Метка об удалении
         index_out.write ((char*)&trash, sizeof(Keynote));
@@ -492,6 +494,8 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
             index_out.write((char*)&buf, sizeof(Keynote));
             index_out.seekp(sizeof(Keynote), ios::cur);
         }
+
+
         index_out.seekp(-sizeof(Keynote), ios::cur);
         index_out.write((char*)&trash, sizeof(Keynote));
     }

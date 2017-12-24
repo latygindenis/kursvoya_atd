@@ -19,7 +19,7 @@ int main() {
 //    myBase.add_note(45);
 //    myBase.show_all_note();
 //    myBase.findValueByKey(2.02432);
-    myBase.deleteValueByKey(0.271858);
+    myBase.deleteValueByKey(1.78919);
 //    myBase.show_all_note();
 ////    myBase.deleteValueByKey(0.274076);
     myBase.show_all_note();
