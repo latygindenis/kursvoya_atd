@@ -50,7 +50,7 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note)
     Keynote buf;
     int size = sizeof(note);
     long long point;
-    float buf_key;
+
     ofstream note_out(NOTES_FILE, ios::binary | ios::app);
     fstream index_out(INDEX_FILE, ios::binary | ios::in | ios::out);
     point = note_out.tellp();
@@ -60,6 +60,7 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note)
     note_out.write((char*)&note, size);
     note_out.close();
     Keynote newNote(urd, gen, point);
+
 
     long long BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
     cout<<"Block for insert: "<<BlockForInsert<<endl;
@@ -89,6 +90,15 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note)
         cout<<"mid "<<mid<<endl;
         cout<<"L: "<<L<<endl;
         cout<<"R: "<<R<<endl;
+        if (buf.getKey() == newNote.getKey()) //Если зарандомился одинаковый ключ
+        {
+            newNote.setNewRandomKey(urd, gen);
+            L=0;
+            R = SizeOfBlock;
+            mid = R/2;
+            index_out.seekg(mid*sizeof(Keynote) + BlockForInsert, ios::beg);
+            index_out.read((char*)&buf, sizeof(Keynote));
+        }
         if (buf.getKey() == -1 or  buf.getKey() > newNote.getKey())
         {
             R = mid;
@@ -436,7 +446,7 @@ int ATD::findValueByKey(float key) {
     cout<<buf.getKey()<<endl;
     cout<<key<<endl;
 
-    if (fabs(buf.getKey() - key) <0.000005)
+    if (fabs(buf.getKey() - key) < 0.000005)
     {
         int value;
         cout<<"Founded point: "<<foundedPoint<<endl;
@@ -463,15 +473,12 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
     fstream index_out (INDEX_FILE, ios::binary | ios::out | ios::in);
     fstream notes_out (NOTES_FILE, ios::binary | ios::out | ios::in);
     long long findedBlock = findBlockforFind(index_out, key);
-    long long textpoint;
     cout<<"foundedBlock: "<<findedBlock<<endl;
     long long foundedIndexPoint = binaryBlockSearch(index_out, findedBlock, key);
     cout<<"foundedIndexPoint: "<<foundedIndexPoint<<endl;
-
     index_out.seekp(foundedIndexPoint, ios::beg);
     index_out.read((char*)&buf, sizeof(Keynote));
     index_out.seekp(-sizeof(Keynote), ios::cur);
-
     int posDel = (findedBlock + sizeof(Keynote) * SizeOfBlock - foundedIndexPoint) / sizeof(Keynote) - 1;
     cout<<posDel<<endl;
     int size = -sizeof(int);
@@ -494,8 +501,6 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
             index_out.write((char*)&buf, sizeof(Keynote));
             index_out.seekp(sizeof(Keynote), ios::cur);
         }
-
-
         index_out.seekp(-sizeof(Keynote), ios::cur);
         index_out.write((char*)&trash, sizeof(Keynote));
     }

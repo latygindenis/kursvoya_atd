@@ -28,7 +28,10 @@ public:
         point = rightKeynote.point;
         return *this;
     }
-
+    void setNewRandomKey(uniform_real_distribution<float> urd, mt19937 &gen)
+    {
+        this->key = urd(gen);
+    }
     float getKey() {
         return key;
     }
