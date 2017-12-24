@@ -319,7 +319,6 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
     }
     else
     {
-
         cout<<"Not found key"<<endl;
     }
     return -1;
@@ -364,7 +363,7 @@ long long ATD::findBlockforFind(fstream &fl, float key)
     fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
     fl.read((char*)&buf, sizeof (Keynote));
 
-    if (buf.getKey() - key <  0.00001)
+    if (buf.getKey() - key <  0.00001) //магия
     {
 
     }
@@ -389,7 +388,6 @@ int ATD::findValueByKey(float key) {
 
     long long findedBlock = findBlockforFind(index_out, key);
     cout<<"findedBlock: "<<findedBlock<<endl;
-
 
     long long L=0;
     long long R=SizeOfBlock-1;
@@ -464,7 +462,7 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
     Keynote buf, trash(-1, -1);
     fstream index_out (INDEX_FILE, ios::binary | ios::out | ios::in);
     fstream notes_out (NOTES_FILE, ios::binary | ios::out | ios::in);
-    long long findedBlock = findBlockForInsert(index_out, key);
+    long long findedBlock = findBlockforFind(index_out, key);
     long long textpoint;
     cout<<"foundedBlock: "<<findedBlock<<endl;
     long long foundedIndexPoint = binaryBlockSearch(index_out, findedBlock, key);
@@ -473,8 +471,8 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
     index_out.read((char*)&buf, sizeof(Keynote));
     index_out.seekp(-sizeof(Keynote), ios::cur);
 
-    int posDel =( (SizeOfBlock - 1)*(findedBlock/ (sizeof(Keynote)*SizeOfBlock) +1 ) - foundedIndexPoint/ sizeof(Keynote));
-    cout<<(SizeOfBlock - 1)*(findedBlock/ (sizeof(Keynote)*SizeOfBlock) +1 )<<endl;
+    int posDel = (findedBlock + sizeof(Keynote) * SizeOfBlock - foundedIndexPoint) / sizeof(Keynote) - 1;
+    cout<<posDel<<endl;
     int size = -sizeof(int);
     if (foundedIndexPoint < 0)
     {
@@ -486,14 +484,15 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
         notes_out.seekp(buf.getPoint(), ios::beg);
         notes_out.write((char*)&size, sizeof(int)); //Метка об удалении
         index_out.write ((char*)&trash, sizeof(Keynote));
-        for (int i=0; i<=posDel; i++)
+
+        for (int i=0; i<posDel; i++)
         {
             index_out.read((char*)&buf, sizeof(Keynote));
-            index_out.seekp(-2*sizeof(Keynote));
+            index_out.seekp(-2*sizeof(Keynote), ios::cur);
             index_out.write((char*)&buf, sizeof(Keynote));
-            index_out.seekp(sizeof(Keynote));
+            index_out.seekp(sizeof(Keynote), ios::cur);
         }
-        index_out.seekp(-sizeof(Keynote));
+        index_out.seekp(-sizeof(Keynote), ios::cur);
         index_out.write((char*)&trash, sizeof(Keynote));
     }
     index_out.close();
