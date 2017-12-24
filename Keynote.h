@@ -8,11 +8,15 @@
 #include <cstdlib>
 #include <iostream>
 #include <random>
+#include <cstdlib>
+
+
 
 using namespace std;
 
 
 class Keynote {
+
     float key;
     long long point;
 
@@ -33,12 +37,11 @@ public:
         return point;
     }
 
-    Keynote (long long point)
+    Keynote (uniform_real_distribution<float> urd, mt19937 &gen, long long point)
     {
-        mt19937 gen(time(0));
-        uniform_real_distribution<float> urd(0, 5); //Генерация случайных вещественных чисел
         this->key = urd(gen);
         this->point = point;
+        cout<<"Gener key: "<<this->key<<endl;
     }
     Keynote (float key, long long point)
     {

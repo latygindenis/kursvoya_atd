@@ -9,16 +9,19 @@
 #include <fstream>
 #include <unistd.h>
 #include <string>
-#include <ctime>
 #include <cmath>
 #include "Keynote.h"
+#include <random>
+#include <cstdlib>
 
 using namespace std;
+
 class ATD {
     const char* NOTES_FILE = "notes.bin";
     const char* INDEX_FILE = "index.bin";
     int SizeOfBlock = 10;
     int AmountOfBlock = 1;
+
 
     long long findBlockForInsert(fstream &fl, float key); //Поиск блока для вставки записи
     void moveNotes(int c, long long placeInsert); //Смещение записей в блоке
@@ -28,7 +31,7 @@ class ATD {
 
 public:
     ATD();
-    void add_note(int note); //Добавление записи в АТД
+    void add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note); //Добавление записи в АТД
     void show_all_note(); //Печать всех записей в индексном файле и значений в файле записей
     int findValueByKey(float key);
     void deleteValueByKey(float key);

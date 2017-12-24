@@ -45,7 +45,7 @@ ATD::ATD() {
     notes_in.close();
 }
 
-void ATD::add_note(int note) {
+void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note) {
 
     Keynote buf;
     int size = sizeof(note);
@@ -59,10 +59,12 @@ void ATD::add_note(int note) {
     note_out.write((char*)&size, sizeof(int));
     note_out.write((char*)&note, size);
     note_out.close();
-    Keynote newNote(point);
+    Keynote newNote(urd, gen, point);
+
     long long BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
     cout<<"Block for insert: "<<BlockForInsert<<endl;
     cout<<newNote.getKey()<<endl;
+
     index_out.seekp((SizeOfBlock - 1 )* sizeof(Keynote) + BlockForInsert ); //В конец блока
     index_out.read((char*)&buf, sizeof(Keynote)); //Считываем последнюю запись
     if (buf.getKey()!=-1)//проверяем мусор запись или нет
@@ -71,6 +73,7 @@ void ATD::add_note(int note) {
         generateBlock(index_out);
         rebaseThisBlock(index_out, BlockForInsert);
     }
+
     BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
     cout<<"Block for insert: "<<BlockForInsert<<endl;
     index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
@@ -82,7 +85,10 @@ void ATD::add_note(int note) {
         index_out.seekg(mid*sizeof(Keynote) + BlockForInsert, ios::beg);
         index_out.read((char*)&buf, sizeof(Keynote));
         cout<<"buf_key "<<buf.getKey()<<endl;
+        cout<<"newNotekey"<<newNote.getKey()<<endl;
         cout<<"mid "<<mid<<endl;
+        cout<<"L: "<<L<<endl;
+        cout<<"R: "<<R<<endl;
         if (buf.getKey() == -1 or  buf.getKey() > newNote.getKey())
         {
             R = mid;
@@ -366,7 +372,6 @@ int ATD::findValueByKey(float key) {
         }
     }
     cout<<L<<endl;
-
     index_out.seekp(L*sizeof(Keynote)  + findedBlock, ios::beg);
     index_out.read((char*)&buf, sizeof(int));
     index_out.close();
@@ -395,18 +400,41 @@ int ATD::findValueByKey(float key) {
 
 void ATD::deleteValueByKey(float key) { //Пока находим указатель на нужный к удалнию элемент
 
+    Keynote buf, trash(-1, -1);
     fstream index_out (INDEX_FILE, ios::binary | ios::out | ios::in);
     fstream notes_out (NOTES_FILE, ios::binary | ios::out | ios::in);
-
-
     long long findedBlock = findBlockForInsert(index_out, key);
+    long long textpoint;
     cout<<"foundedBlock: "<<findedBlock<<endl;
     long long foundedIndexPoint = binaryBlockSearch(index_out, findedBlock, key);
     cout<<"foundedIndexPoint: "<<foundedIndexPoint<<endl;
+    index_out.seekp(findedBlock * sizeof(Keynote) + foundedIndexPoint, ios::beg);
+    index_out.read((char*)&buf, sizeof(Keynote));
+    index_out.seekp(-sizeof(Keynote), ios::cur);
 
+    int posDel =( (SizeOfBlock - 1)*(findedBlock/ (sizeof(Keynote)*SizeOfBlock) +1 ) - foundedIndexPoint/ sizeof(Keynote));
+    cout<<(SizeOfBlock - 1)*(findedBlock/ (sizeof(Keynote)*SizeOfBlock) +1 )<<endl;
+    int size = -sizeof(int);
     if (foundedIndexPoint < 0)
     {
-        cout<<"Not founded index :( for deleting"<<endl;
+        cout<<"Not founded index :( for delete"<<endl;
     }
+    else {
+        cout<<"ff"<<buf.getKey()<<endl;
+        cout<<posDel<<endl;
+        notes_out.seekp(buf.getPoint(), ios::beg);
+        notes_out.write((char*)&size, sizeof(int)); //Метка об удалении
+        index_out.write ((char*)&trash, sizeof(Keynote));
+        for (int i=0; i<=posDel; i++)
+        {
+            index_out.read((char*)&buf, sizeof(Keynote));
+            index_out.seekp(-2*sizeof(Keynote));
+            index_out.write((char*)&buf, sizeof(Keynote));
+            index_out.seekp(sizeof(Keynote));
+        }
+        index_out.seekp(-sizeof(Keynote));
+        index_out.write((char*)&trash, sizeof(Keynote));
+    }
+    index_out.close();
+    notes_out.close();
 }
-

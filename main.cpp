@@ -1,18 +1,26 @@
 #include <iostream>
 #include "ATD.h"
 
+
 int main() {
-    srand(static_cast<unsigned int>(time(NULL)));
 
-
+    mt19937 gen(static_cast<unsigned long>(time(nullptr)));
 
     ATD myBase;
+    float  fff;
     int a=999, b=875; //0.0774815, 0.479748
-
-    myBase.add_note(785);
+    uniform_real_distribution<float> urd(0, 100);
+    for (int i=0; i<500; i++)
+    {
+        myBase.add_note(urd, gen, 785);
+    }
     myBase.show_all_note();
-    myBase.findValueByKey(0.274076);
-    myBase.deleteValueByKey(0.274076);
+
+//    myBase.add_note(45);
+//    myBase.show_all_note();
+////    myBase.findValueByKey(0.274076);
+////    myBase.deleteValueByKey(0.274076);
+//    myBase.show_all_note();
 
     return 0;
 }
