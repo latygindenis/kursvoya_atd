@@ -13,7 +13,8 @@ int main() {
 //    {
 //        myBase.add_note(urd, gen, 785);
 //    }
+
+    myBase.deleteValueByKey(99.1412);
     myBase.show_all_note();
-    myBase.findValueByKey(0.353104 );
     return 0;
 }

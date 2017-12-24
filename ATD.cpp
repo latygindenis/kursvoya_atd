@@ -294,7 +294,7 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
     {
         fl.seekg(mid*sizeof(Keynote) + CurrentBlock, ios::beg);
         fl.read((char*)&buf, sizeof(Keynote));
-        if (fabs(buf.getKey() - key) < 0.000005)
+        if (fabs(buf.getKey() - key) < 0.00005)
         {
             cout<<key<<endl;
             cout<<"key: "<<buf.getKey()<<" founded"<<endl;
@@ -318,7 +318,7 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
     cout<<key<<endl;
     cout<<fabs(buf.getKey() - key)<<endl;
 
-    if (fabs(buf.getKey() - key) <0.000005)
+    if (fabs(buf.getKey() - key) <0.00005)
     {
         int value;
         cout<<"base key:"<<key<<endl;
@@ -371,12 +371,12 @@ long long ATD::findBlockforFind(fstream &fl, float key)
     fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
     fl.read((char*)&buf, sizeof (Keynote));
 
-    if (buf.getKey() - key <  0.00001) //магия
+    if (buf.getKey() - key <  0.00005) //магия
     {
 
     }
 
-    else if (L < AmountOfBlock -1 or buf.getKey() - key >=  0.00001)
+    else if (L < AmountOfBlock -1 or buf.getKey() - key >=  0.00005)
     {
         L--;
     }
