@@ -371,12 +371,7 @@ long long ATD::findBlockforFind(fstream &fl, float key)
     fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
     fl.read((char*)&buf, sizeof (Keynote));
 
-    if (buf.getKey() - key <  0.00005) //магия
-    {
-
-    }
-
-    else if (L < AmountOfBlock -1 or buf.getKey() - key >=  0.00005)
+    if (L < AmountOfBlock -1 or buf.getKey() - key >=  0.00005)
     {
         L--;
     }
@@ -508,4 +503,16 @@ void ATD::deleteValueByKey(float key) { //Пока находим указате
 
 void ATD::deleteEmptyBlock(fstream &fl, long long beginEmptyBlock) {
 
+    Keynote buf;
+    for (long long i=fl.tellp(); i<AmountOfBlock* sizeof(Keynote)*SizeOfBlock; i+= sizeof(Keynote))
+    {
+        fl.seekp(i, ios::beg);
+        fl.read((char*)&buf, sizeof(Keynote));
+        fl.seekp(i - SizeOfBlock* sizeof(Keynote));
+        fl.write((char*)&buf, sizeof(Keynote));
+    }
+}
+
+int ATD::getAmountOfBlock() const {
+    return AmountOfBlock;
 }

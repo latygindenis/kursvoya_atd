@@ -21,6 +21,10 @@ class ATD {
     const char* INDEX_FILE = "index.bin";
     int SizeOfBlock = 1000;
     int AmountOfBlock = 1;
+public:
+    int getAmountOfBlock() const;
+
+private:
 
 
     long long findBlockForInsert(fstream &fl, float key); //Поиск блока для вставки записи
