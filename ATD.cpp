@@ -45,12 +45,12 @@ ATD::ATD() {
     notes_in.close();
 }
 
-void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note) {
+void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen,  int note, float myKey) {
 
     Keynote buf;
     int size = sizeof(note);
     long long point;
-
+    cout<<myKey<<endl;
     ofstream note_out(NOTES_FILE, ios::binary | ios::app);
     fstream index_out(INDEX_FILE, ios::binary | ios::in | ios::out);
     point = note_out.tellp();
@@ -60,7 +60,10 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note)
     note_out.write((char*)&note, size);
     note_out.close();
     Keynote newNote(urd, gen, point);
-
+    if (myKey > -1 )
+    {
+       newNote.setKey(myKey);
+    }
 
     long long BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
 //    cout<<"Block for insert: "<<BlockForInsert<<endl;
@@ -515,4 +518,8 @@ void ATD::deleteEmptyBlock(fstream &fl, long long beginEmptyBlock) {
 
 int ATD::getAmountOfBlock() const {
     return AmountOfBlock;
+}
+
+int ATD::getSizeOfBlock() const {
+    return SizeOfBlock;
 }

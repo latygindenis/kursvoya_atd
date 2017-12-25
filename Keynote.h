@@ -18,6 +18,12 @@ using namespace std;
 class Keynote {
 
     float key;
+public:
+    void setKey(float key) {
+        Keynote::key = key;
+    }
+
+private:
     long long point;
 
 

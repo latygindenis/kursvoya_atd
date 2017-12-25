@@ -20,6 +20,10 @@ class ATD {
     const char* NOTES_FILE = "notes.bin";
     const char* INDEX_FILE = "index.bin";
     int SizeOfBlock = 1000;
+public:
+    int getSizeOfBlock() const;
+
+private:
     int AmountOfBlock = 1;
 public:
     int getAmountOfBlock() const;
@@ -37,7 +41,7 @@ private:
 
 public:
     ATD();
-    void add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note); //Добавление записи в АТД
+    void add_note(uniform_real_distribution<float> urd, mt19937 &gen, int note, float myKey=-1); //Добавление записи в АТД
     void show_all_note(); //Печать всех записей в индексном файле и значений в файле записей
     int findValueByKey(float key);
     void deleteValueByKey(float key);

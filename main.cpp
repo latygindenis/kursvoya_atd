@@ -12,12 +12,13 @@ int main() {
     int var;
     do
     {
-        cout<<"Amount of blocks: "<<myBase.getAmountOfBlock()<<endl;
+        cout<<"Amount of blocks: "<<myBase.getAmountOfBlock()<<"; Size of Block: "<<myBase.getSizeOfBlock()<<endl;
         cout<<"Add one note(1)"<<endl;
         cout<<"Find note by key(2)"<<endl;
         cout<<"Delete note by key(3)"<<endl;
         cout<<"Show all note(4)"<<endl;
         cout<<"Add N notes(5)"<<endl;
+        cout<<"Add note with own key(6)"<<endl;
         cout<<"Exit(0)"<<endl;
         cin>>var;
         switch (var)
@@ -51,6 +52,13 @@ int main() {
                 {
                     myBase.add_note(urd, gen, defaultNote);
                 }
+                break;
+            case 6:
+                cout<<"Enter key: ";
+                cin>>key;
+                cout<<"Enter note: ";
+                cin>>note;
+                myBase.add_note(urd, gen, note, key);
                 break;
             default:break;
         }
