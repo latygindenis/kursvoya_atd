@@ -16,6 +16,10 @@ void ATD::moveNotes(int c, long long placeInsert){ //Смещение запис
         iout.seekp(-sizeof(Keynote), ios::cur);
         iout.write((char*)&buf, sizeof(Keynote));
         buf = kpr;
+        if (buf.getKey() == -1)
+        {
+            break;
+        }
     }
     iout.close();
 }
@@ -37,7 +41,6 @@ ATD::ATD() {
         ofstream index_out(INDEX_FILE, ios::binary | ios::app);// создание бинарного файла индексов
         for (int i=0; i<SizeOfBlock; i++)
         {
-           // cout<<index_out.tellp()<<endl;
             index_out.write((char*)&trash, sizeof(Keynote));
         }
         index_out.close();
@@ -50,12 +53,9 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen,  int note
     Keynote buf;
     int size = sizeof(note);
     long long point;
-    cout<<myKey<<endl;
     ofstream note_out(NOTES_FILE, ios::binary | ios::app);
     fstream index_out(INDEX_FILE, ios::binary | ios::in | ios::out);
     point = note_out.tellp();
-//    cout<<"Point: "<<point<<endl;
- //   cout<<note<<endl;
     note_out.write((char*)&size, sizeof(int));
     note_out.write((char*)&note, size);
     note_out.close();
@@ -66,20 +66,23 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen,  int note
     }
 
     long long BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
-//    cout<<"Block for insert: "<<BlockForInsert<<endl;
-//    cout<<newNote.getKey()<<endl;
-
     index_out.seekp((SizeOfBlock - 1 )* sizeof(Keynote) + BlockForInsert ); //В конец блока
     index_out.read((char*)&buf, sizeof(Keynote)); //Считываем последнюю запись
+
+
     if (buf.getKey()!=-1)//проверяем мусор запись или нет
     {
-      //  cout<<"End of block"<<endl;
-        generateBlock(index_out);
-        rebaseThisBlock(index_out, BlockForInsert);
+
+        if (buf.getKey() < newNote.getKey() && index_out.tellp()<SizeOfBlock*AmountOfBlock* sizeof(Keynote))
+        {
+            BlockForInsert += sizeof(Keynote)*SizeOfBlock;
+        } else{
+            generateBlock(index_out);
+            rebaseThisBlock(index_out, BlockForInsert);
+            BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
+        }
     }
 
-    BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
-//    cout<<"Block for insert: "<<BlockForInsert<<endl;
     index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
     long long L=0;
     long long R=SizeOfBlock;
@@ -88,13 +91,10 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen,  int note
     {
         index_out.seekg(mid*sizeof(Keynote) + BlockForInsert, ios::beg);
         index_out.read((char*)&buf, sizeof(Keynote));
-//        cout<<"buf_key "<<buf.getKey()<<endl;
-//        cout<<"newNotekey"<<newNote.getKey()<<endl;
-//        cout<<"mid "<<mid<<endl;
-//        cout<<"L: "<<L<<endl;
-//        cout<<"R: "<<R<<endl;
-        if (buf.getKey() == newNote.getKey()) //Если зарандомился одинаковый ключ
+
+        if (fabs(buf.getKey() - newNote.getKey()) < 0.000005) //Если зарандомился одинаковый ключ
         {
+            cout<<":("<<endl;
             newNote.setNewRandomKey(urd, gen);
             L=0;
             R = SizeOfBlock;
@@ -113,9 +113,6 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen,  int note
             mid = (R + L)/2;
         }
     }
-//    cout<<L<<endl;
-//    cout<<R<<endl;
-//    cout<<mid<<endl;
     index_out.seekp(L*sizeof(Keynote) + BlockForInsert| ios::beg);
     index_out.read((char*)&buf, sizeof(Keynote));
     if (buf.getKey() != -1)
@@ -171,7 +168,6 @@ void ATD::generateBlock(fstream &fl) {
     Keynote trash(-1, -1);
     for (int i=0; i<SizeOfBlock; i++)
     {
-        //cout<<fl.tellp()<<endl;
         fl.write((char*)&trash, sizeof(Keynote));
     }
 }
@@ -236,7 +232,6 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
         {
             fl.seekp(CurBlockReabase, ios::beg);
             fl.read((char*)&buf, sizeof (Keynote));
-            //cout<<i<<" "<<buf.getKey()<<" "<<NextBlockReabase<<endl;
             fl.seekp(-sizeof(Keynote), ios::cur);
             fl.write((char*)&trash, sizeof (Keynote));
             CurBlockReabase += sizeof(Keynote);
@@ -245,7 +240,6 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
             fl.write((char*)&buf, sizeof (Keynote));
             fl.seekp(-sizeof(Keynote), ios::cur);
             fl.read((char*)&buf2, sizeof (Keynote));
-           // cout<<" "<<buf2.getKey()<<endl;
             NextBlockReabase += sizeof(Keynote);
         }
 
@@ -273,7 +267,6 @@ long long ATD::findBlockForInsert(fstream &fl, float key) { //Возвращае
             L = mid + 1;
             mid = (R + L)/2;
         }
-
     }
     if (L<0)
     {
@@ -323,7 +316,6 @@ long long ATD::binaryBlockSearch(fstream &fl, long long CurrentBlock, float key)
 
     if (fabs(buf.getKey() - key) <0.00005)
     {
-        int value;
         cout<<"base key:"<<key<<endl;
         cout<<"key: "<<buf.getKey()<<" founded"<<endl;
         return fl.tellp() - sizeof(Keynote);
@@ -366,10 +358,6 @@ long long ATD::findBlockforFind(fstream &fl, float key)
     {
         return 0;
     }
-    cout<<"Block L: "<<L<<endl;
-    cout<<"Block R: "<<R<<endl;
-    cout<<buf.getKey()<<endl;
-    cout<<key<<endl;
 
     fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
     fl.read((char*)&buf, sizeof (Keynote));
@@ -379,7 +367,6 @@ long long ATD::findBlockforFind(fstream &fl, float key)
         L--;
     }
 
-    cout<<"Block L: "<<L<<endl;
     fl.seekp(L * SizeOfBlock * sizeof(Keynote), ios::beg);
     fl.read((char*)&buf, sizeof (Keynote));
     return L * SizeOfBlock * sizeof(Keynote);
@@ -402,9 +389,6 @@ int ATD::findValueByKey(float key) {
     {
         index_out.seekg(mid*sizeof(Keynote) + findedBlock, ios::beg);
         index_out.read((char*)&buf, sizeof(Keynote));
-        cout<<"buf_key "<<buf.getKey()<<endl;
-        cout<<"mid "<<mid<<endl;
-
         if (fabs(buf.getKey() - key) < 0.00005)
         {
             int value;

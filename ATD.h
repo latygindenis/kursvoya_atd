@@ -19,7 +19,7 @@ using namespace std;
 class ATD {
     const char* NOTES_FILE = "notes.bin";
     const char* INDEX_FILE = "index.bin";
-    int SizeOfBlock = 1000;
+    int SizeOfBlock = 1000000;
 public:
     int getSizeOfBlock() const;
 

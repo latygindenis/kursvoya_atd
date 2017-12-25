@@ -8,7 +8,7 @@ int main() {
     ATD myBase;
     int note, amountOfNotes, defaultNote = 145;
     float key;
-    uniform_real_distribution<float> urd(0, 100);
+    uniform_real_distribution<float> urd(0.0, 1000.0);
     int var;
     do
     {
@@ -50,6 +50,10 @@ int main() {
                 cin>>amountOfNotes;
                 for(int i=0; i<amountOfNotes; i++)
                 {
+                    if (i%1000==0)
+                    {
+                        cout<<i<<endl;
+                    }
                     myBase.add_note(urd, gen, defaultNote);
                 }
                 break;
