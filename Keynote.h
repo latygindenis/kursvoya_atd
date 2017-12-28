@@ -17,9 +17,9 @@ using namespace std;
 
 class Keynote {
 
-    float key;
+    double key;
 public:
-    void setKey(float key) {
+    void setKey(double key) {
         Keynote::key = key;
     }
 
@@ -34,11 +34,11 @@ public:
         point = rightKeynote.point;
         return *this;
     }
-    void setNewRandomKey(uniform_real_distribution<float> urd, mt19937 &gen)
+    void setNewRandomKey(uniform_real_distribution<double> urd, mt19937 &gen)
     {
         this->key = urd(gen);
     }
-    float getKey() {
+    double getKey() {
         return key;
     }
 
@@ -46,12 +46,12 @@ public:
         return point;
     }
 
-    Keynote (uniform_real_distribution<float> urd, mt19937 &gen, long long point)
+    Keynote (uniform_real_distribution<double> urd, mt19937 &gen, long long point)
     {
         this->key = urd(gen);
         this->point = point;
     }
-    Keynote (float key, long long point)
+    Keynote (double key, long long point)
     {
         this->key = key;
         this->point = point;

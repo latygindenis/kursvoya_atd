@@ -1,14 +1,15 @@
 #include <iostream>
 #include "ATD.h"
-
+#include <ctime>
 
 int main() {
-
+    srand(time(0));
     mt19937 gen(static_cast<unsigned long>(time(nullptr)));
     ATD myBase;
     int note, amountOfNotes, defaultNote = 145;
-    float key;
-    uniform_real_distribution<float> urd(0.0, 1000.0);
+    unsigned int start_time=0, end_time;
+    double key;
+    uniform_real_distribution<double> urd(0.0, 1000.0);
     int var;
     do
     {
@@ -48,14 +49,13 @@ int main() {
             case 5:
                 cout<<"Enter amount of notes: ";
                 cin>>amountOfNotes;
+                start_time = static_cast<unsigned int>(clock());
                 for(int i=0; i<amountOfNotes; i++)
                 {
-                    if (i%100000==0)
-                    {
-                        cout<<i<<endl;
-                    }
                     myBase.add_note(urd, gen, defaultNote);
                 }
+                end_time = static_cast<unsigned int>(clock());
+                cout<<"Time: "<<(end_time - start_time)/1000000.0 <<" s."<<endl;
                 break;
             case 6:
                 cout<<"Enter key: ";
