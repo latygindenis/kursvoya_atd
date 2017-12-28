@@ -376,7 +376,7 @@ int ATD::findValueByKey(double key) {
     cout<<L<<endl;
     index_out.seekp(L*sizeof(Keynote)  + findedBlock, ios::beg);
     foundedPoint = index_out.tellp();
-    index_out.read((char*)&buf, sizeof(int));
+    index_out.read((char*)&buf, sizeof(Keynote));
 
     index_out.close();
     cout<<buf.getKey()<<endl;
