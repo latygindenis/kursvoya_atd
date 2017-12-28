@@ -6,11 +6,9 @@
 
 void ATD::moveNotes(int c, long long placeInsert){ //Смещение записей
 
-    Keynote kpr, buf;
     char *SmallBlock = new char[sizeof(Keynote)*(SizeOfBlock-c-1)];
     fstream iout(INDEX_FILE, ios::binary | ios::in | ios::out);
     iout.seekg(placeInsert, ios::beg);
-
     iout.read(SmallBlock, sizeof(Keynote)*(SizeOfBlock-c-1));
     iout.seekg(placeInsert + sizeof(Keynote), ios::beg);
     iout.write(SmallBlock,sizeof(Keynote)*(SizeOfBlock-c-1) );
@@ -115,7 +113,6 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen,  int note
     }
     index_out.seekp(L*sizeof(Keynote) + BlockForInsert | ios::beg);
     index_out.write((char*)&newNote, sizeof(Keynote));
-
     index_out.close();
 }
 void ATD::show_all_note(){
@@ -129,6 +126,7 @@ void ATD::show_all_note(){
 
     Keynote mysmallnote;
     int design = 0;
+
 while (index_out.read((char*)&mysmallnote, sizeof(Keynote)))
 {
     if(design%SizeOfBlock == 0)
@@ -156,79 +154,52 @@ while (index_out.read((char*)&mysmallnote, sizeof(Keynote)))
 }
 
 void ATD::generateBlock(fstream &fl) {
+
     fl.seekp(SizeOfBlock*sizeof(Keynote)*AmountOfBlock);
     this->AmountOfBlock++;
-
     Keynote trash(-1, -1);
     for (int i=0; i<SizeOfBlock; i++)
     {
         fl.write((char*)&trash, sizeof(Keynote));
     }
+
 }
 
 void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
-    Keynote buf, buf2, trash (-1, -1);
-    long long CurBlockReabase;
-    long long NextBlockReabase;
+    Keynote trash (-1, -1);
+    char *SmallBlock;
     long long OtherBlockRebase;
-
-
     fl.seekp(0, ios::end);
-    NextBlockReabase = fl.tellp() - SizeOfBlock * sizeof(Keynote); //Указатель на начало пустого блока
-    OtherBlockRebase = NextBlockReabase - SizeOfBlock*sizeof(Keynote);
-
+    OtherBlockRebase = fl.tellp() - 2*SizeOfBlock*sizeof(Keynote); //Указатель на блок перед пустым
     if (OtherBlockRebase == CurrentBlock)
     {
         fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
-        CurBlockReabase = fl.tellp(); //указатель на перемещаемый блок
-
+        SmallBlock = new char[sizeof(Keynote)*(SizeOfBlock/2)];
+        fl.read(SmallBlock, sizeof(Keynote)*(SizeOfBlock/2));
+        fl.seekg(-sizeof(Keynote)*(SizeOfBlock/2), ios::cur);
         for (int i=0; i<SizeOfBlock/2; i++)
         {
-
-            fl.seekp(CurBlockReabase, ios::beg);
-            fl.read((char*)&buf, sizeof (Keynote));
-            fl.seekp(-sizeof(Keynote), ios::cur);
-
-            fl.write((char*)&trash, sizeof (Keynote));
-            CurBlockReabase += sizeof(Keynote);
-
-            fl.seekp(NextBlockReabase, ios::beg);
-            fl.write((char*)&buf, sizeof (Keynote));
-            fl.seekp(-sizeof(Keynote), ios::cur);
-            fl.read((char*)&buf2, sizeof (Keynote));
-            NextBlockReabase += sizeof(Keynote);
+            fl.write((char*)&trash, sizeof(Keynote));
         }
+        fl.write(SmallBlock, sizeof(Keynote)*(SizeOfBlock/2));
+        delete SmallBlock;
     }
     else{
         while (OtherBlockRebase != CurrentBlock)
         {
             moveBlockRight(fl, OtherBlockRebase);
             OtherBlockRebase -= sizeof(Keynote)*SizeOfBlock;
-            NextBlockReabase -= sizeof(Keynote)*SizeOfBlock;
         }
-
         fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
-
-        CurBlockReabase = fl.tellp(); //указатель на перемещаемый блок
-
-
-
+        SmallBlock = new char[sizeof(Keynote)*(SizeOfBlock/2)];
+        fl.read(SmallBlock, sizeof(Keynote)*(SizeOfBlock/2));
+        fl.seekg(-sizeof(Keynote)*(SizeOfBlock/2), ios::cur);
         for (int i=0; i<SizeOfBlock/2; i++)
         {
-            fl.seekp(CurBlockReabase, ios::beg);
-            fl.read((char*)&buf, sizeof (Keynote));
-            fl.seekp(-sizeof(Keynote), ios::cur);
-            fl.write((char*)&trash, sizeof (Keynote));
-            CurBlockReabase += sizeof(Keynote);
-
-            fl.seekp(NextBlockReabase, ios::beg);
-            fl.write((char*)&buf, sizeof (Keynote));
-            fl.seekp(-sizeof(Keynote), ios::cur);
-            fl.read((char*)&buf2, sizeof (Keynote));
-            NextBlockReabase += sizeof(Keynote);
+            fl.write((char*)&trash, sizeof(Keynote));
         }
-
-
+        fl.write(SmallBlock, sizeof(Keynote)*(SizeOfBlock/2));
+        delete SmallBlock;
     }
 }
 
