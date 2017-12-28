@@ -19,7 +19,7 @@ using namespace std;
 class ATD {
     const char* NOTES_FILE = "notes.bin";
     const char* INDEX_FILE = "index.bin";
-    int SizeOfBlock = 1000000;
+    int SizeOfBlock = 10;
 public:
     int getSizeOfBlock() const;
 
@@ -38,6 +38,7 @@ private:
     void rebaseThisBlock(fstream &fl, long long CurrentBlock); //Перестройка индексного файла
     long long binaryBlockSearch(fstream &fl, long long CurrentBlock, float key); //
     long long int findBlockforFind(fstream &fl, float key); //Поиск блока для поиска
+    void moveBlockRight(fstream &fl, long long CurrentBlock);
 
 public:
     ATD();

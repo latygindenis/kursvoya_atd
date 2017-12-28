@@ -7,20 +7,14 @@
 void ATD::moveNotes(int c, long long placeInsert){ //Смещение записей
 
     Keynote kpr, buf;
+    char *SmallBlock = new char[sizeof(Keynote)*(SizeOfBlock-c-1)];
     fstream iout(INDEX_FILE, ios::binary | ios::in | ios::out);
     iout.seekg(placeInsert, ios::beg);
-    iout.read((char*)&buf, sizeof(Keynote));
 
-    for(int j=c; j<SizeOfBlock-1; j++) { //смещаем все записи (начиная с места вставки)
-        iout.read((char*)&kpr, sizeof(Keynote));
-        iout.seekp(-sizeof(Keynote), ios::cur);
-        iout.write((char*)&buf, sizeof(Keynote));
-        buf = kpr;
-        if (buf.getKey() == -1)
-        {
-            break;
-        }
-    }
+    iout.read(SmallBlock, sizeof(Keynote)*(SizeOfBlock-c-1));
+    iout.seekg(placeInsert + sizeof(Keynote), ios::beg);
+    iout.write(SmallBlock,sizeof(Keynote)*(SizeOfBlock-c-1) );
+    delete SmallBlock;
     iout.close();
 }
 
@@ -94,7 +88,7 @@ void ATD::add_note(uniform_real_distribution<float> urd, mt19937 &gen,  int note
 
         if (fabs(buf.getKey() - newNote.getKey()) < 0.000005) //Если зарандомился одинаковый ключ
         {
-            cout<<":("<<endl;
+           // cout<<":("<<endl;
             newNote.setNewRandomKey(urd, gen);
             L=0;
             R = SizeOfBlock;
@@ -208,25 +202,16 @@ void ATD::rebaseThisBlock(fstream &fl, long long CurrentBlock) {
     else{
         while (OtherBlockRebase != CurrentBlock)
         {
-            for (int i = 0; i<SizeOfBlock; i++)
-            {
-                fl.seekp(OtherBlockRebase, ios::beg);
-                fl.read((char*)&buf, sizeof (Keynote));
-                fl.seekp(-sizeof(Keynote), ios::cur);
-                fl.write((char*)&trash, sizeof (Keynote));
-                OtherBlockRebase += sizeof(Keynote);
-
-                fl.seekp(NextBlockReabase, ios::beg);
-                fl.write((char*)&buf, sizeof (Keynote));
-                NextBlockReabase += sizeof(Keynote);
-
-            }
-            OtherBlockRebase -= sizeof(Keynote)*SizeOfBlock*2;
-            NextBlockReabase -= sizeof(Keynote)*SizeOfBlock*2;
+            moveBlockRight(fl, OtherBlockRebase);
+            OtherBlockRebase -= sizeof(Keynote)*SizeOfBlock;
+            NextBlockReabase -= sizeof(Keynote)*SizeOfBlock;
         }
 
         fl.seekp(CurrentBlock + sizeof(Keynote)*(SizeOfBlock/2), ios::beg);
+
         CurBlockReabase = fl.tellp(); //указатель на перемещаемый блок
+
+
 
         for (int i=0; i<SizeOfBlock/2; i++)
         {
@@ -506,4 +491,19 @@ int ATD::getAmountOfBlock() const {
 
 int ATD::getSizeOfBlock() const {
     return SizeOfBlock;
+}
+
+void ATD::moveBlockRight(fstream &fl, long long CurrentBlock) {
+    Keynote trash(-1, -1);
+    fl.seekg(CurrentBlock, ios::beg);
+    char *buf = new char[SizeOfBlock*sizeof(Keynote)];
+
+    fl.read(buf, SizeOfBlock*sizeof(Keynote));
+    fl.seekg(-SizeOfBlock*sizeof(Keynote), ios::cur);
+    for (int i=0; i<SizeOfBlock; i++)
+    {
+        fl.write((char*)&trash, sizeof(Keynote));
+    }
+    fl.write(buf, SizeOfBlock*sizeof(Keynote));
+    delete buf;
 }

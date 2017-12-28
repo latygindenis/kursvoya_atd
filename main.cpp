@@ -50,7 +50,7 @@ int main() {
                 cin>>amountOfNotes;
                 for(int i=0; i<amountOfNotes; i++)
                 {
-                    if (i%1000==0)
+                    if (i%100000==0)
                     {
                         cout<<i<<endl;
                     }
