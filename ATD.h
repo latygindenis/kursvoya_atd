@@ -18,7 +18,7 @@ using namespace std;
 
 class ATD {
     const char* NOTES_FILE = "notes.bin";
-    const char* INDEX_FILE = "index.bin";
+    const char* INDEX_FILE = "index1.bin";
     int SizeOfBlock = 1000;
 public:
     int getSizeOfBlock() const;
@@ -29,8 +29,6 @@ public:
     int getAmountOfBlock() const;
 
 private:
-
-
     long long findBlockForInsert(fstream &fl, double key); //Поиск блока для вставки записи
     void deleteEmptyBlock(fstream &fl, long long beginEmptyBlock);
     void moveNotes(int c, long long placeInsert); //Смещение записей в блоке
@@ -46,7 +44,7 @@ public:
     void show_all_note(); //Печать всех записей в индексном файле и значений в файле записей
     int findValueByKey(double key);
     void deleteValueByKey(double key);
-
+    long long fastBinarySearch(uniform_real_distribution<double> urd, mt19937 &gen, fstream &fl, long long CurrentBlock, Keynote &newNote);
 };
 
 

@@ -28,12 +28,12 @@ private:
 
 
 public:
-    Keynote & operator=(Keynote &rightKeynote){
-        if (&rightKeynote == this) return *this;//Проверка на самоприсваивание
-        key= rightKeynote.getKey();
-        point = rightKeynote.point;
-        return *this;
-    }
+//    Keynote & operator=(Keynote &rightKeynote){
+//        if (&rightKeynote == this) return *this;//Проверка на самоприсваивание
+//        key= rightKeynote.getKey();
+//        point = rightKeynote.point;
+//        return *this;
+//    }
     void setNewRandomKey(uniform_real_distribution<double> urd, mt19937 &gen)
     {
         this->key = urd(gen);

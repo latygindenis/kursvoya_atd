@@ -4,6 +4,7 @@
 
 #include "ATD.h"
 
+
 void ATD::moveNotes(int c, long long placeInsert){ //Смещение записей
 
     char *SmallBlock = new char[sizeof(Keynote)*(SizeOfBlock-c-1)];
@@ -44,13 +45,16 @@ void ATD::add_note(uniform_real_distribution<double> urd, mt19937 &gen, int note
 
     Keynote buf;
     int size = sizeof(note);
+    long long bufpoint = 0;
     long long point;
     ofstream note_out(NOTES_FILE, ios::binary | ios::app);
     fstream index_out(INDEX_FILE, ios::binary | ios::in | ios::out);
+
     point = note_out.tellp();
     note_out.write((char*)&size, sizeof(int));
     note_out.write((char*)&note, size);
     note_out.close();
+
     Keynote newNote(urd, gen, point);
     if (myKey > -1 )
     {
@@ -58,9 +62,8 @@ void ATD::add_note(uniform_real_distribution<double> urd, mt19937 &gen, int note
     }
 
     long long BlockForInsert = findBlockForInsert(index_out, newNote.getKey());
-    index_out.seekp((SizeOfBlock - 1 )* sizeof(Keynote) + BlockForInsert ); //В конец блока
+    index_out.seekp((SizeOfBlock - 1 )* sizeof(Keynote) + BlockForInsert, ios::beg); //В конец блока
     index_out.read((char*)&buf, sizeof(Keynote)); //Считываем последнюю запись
-
 
     if (buf.getKey()!=-1)//проверяем мусор запись или нет
     {
@@ -75,44 +78,7 @@ void ATD::add_note(uniform_real_distribution<double> urd, mt19937 &gen, int note
         }
     }
 
-    index_out.seekp(BlockForInsert, ios::beg);//Начало блока вставки
-    long long L=0;
-    long long R=SizeOfBlock;
-    long long mid = R/2;
-    while (L < R) //бинарный поиск по блоку
-    {
-        index_out.seekg(mid*sizeof(Keynote) + BlockForInsert, ios::beg);
-        index_out.read((char*)&buf, sizeof(Keynote));
-
-        if (fabs(buf.getKey() - newNote.getKey()) < 0.000005) //Если зарандомился одинаковый ключ
-        {
-           // cout<<":("<<endl;
-            newNote.setNewRandomKey(urd, gen);
-            L=0;
-            R = SizeOfBlock;
-            mid = R/2;
-            index_out.seekg(mid*sizeof(Keynote) + BlockForInsert, ios::beg);
-            index_out.read((char*)&buf, sizeof(Keynote));
-        }
-        if (buf.getKey() == -1 or  buf.getKey() > newNote.getKey())
-        {
-            R = mid;
-            mid = (R+L)/2;
-        }
-        if (buf.getKey() < newNote.getKey() && buf.getKey() != -1)
-        {
-            L = mid + 1;
-            mid = (R + L)/2;
-        }
-    }
-    index_out.seekp(L*sizeof(Keynote) + BlockForInsert| ios::beg);
-    index_out.read((char*)&buf, sizeof(Keynote));
-    if (buf.getKey() != -1)
-    {
-        moveNotes(L, L*sizeof(Keynote) + BlockForInsert);
-    }
-    index_out.seekp(L*sizeof(Keynote) + BlockForInsert | ios::beg);
-    index_out.write((char*)&newNote, sizeof(Keynote));
+    fastBinarySearch(urd, gen,index_out, BlockForInsert, newNote);
     index_out.close();
 }
 
@@ -477,4 +443,53 @@ void ATD::moveBlockRight(fstream &fl, long long CurrentBlock) {
     }
     fl.write(buf, SizeOfBlock*sizeof(Keynote));
     delete buf;
+}
+
+long long ATD::fastBinarySearch(uniform_real_distribution<double> urd, mt19937 &gen,fstream &fl, long long BlockForInsert, Keynote &newNote) {
+
+    Keynote *KeynoteBuffer;
+    KeynoteBuffer = new Keynote[SizeOfBlock];
+    fl.seekg(BlockForInsert, ios::beg);
+    fl.read(reinterpret_cast<char *>(KeynoteBuffer), SizeOfBlock * sizeof(Keynote) );
+
+    long long L=0;
+    long long R=SizeOfBlock;
+    long long mid = R/2;
+
+    while (L < R) //бинарный поиск по блоку
+    {
+        if (fabs(KeynoteBuffer[mid].getKey() - newNote.getKey()) < 0.000005) //Если зарандомился одинаковый ключ
+        {
+            newNote.setNewRandomKey(urd, gen);
+            L=0;
+            R = SizeOfBlock;
+            mid = R/2;
+            continue;
+        }
+        if (KeynoteBuffer[mid].getKey() == -1 or  KeynoteBuffer[mid].getKey() > newNote.getKey())
+        {
+            R = mid;
+            mid = (R + L)/2;
+        }
+        if (KeynoteBuffer[mid].getKey() < newNote.getKey() && KeynoteBuffer[mid].getKey() != -1)
+        {
+            L = mid + 1;
+            mid = (R + L)/2;
+        }
+    }
+
+    if (KeynoteBuffer[L].getKey() != -1)
+    {
+        char *SmallBlock = new char[sizeof(Keynote)*(SizeOfBlock-L-1)];
+        fl.seekg(L * sizeof(Keynote) + BlockForInsert, ios::beg);
+        fl.read(SmallBlock, sizeof(Keynote)*(SizeOfBlock-L-1));
+        fl.seekg(L * sizeof(Keynote) + BlockForInsert + sizeof(Keynote), ios::beg);
+        fl.write(SmallBlock, sizeof(Keynote)*(SizeOfBlock-L-1));
+        delete SmallBlock;
+    }
+    fl.seekp(L*sizeof(Keynote) + BlockForInsert | ios::beg);
+    fl.write((char*)&newNote, sizeof(Keynote));
+
+    delete KeynoteBuffer;
+    return L;
 }

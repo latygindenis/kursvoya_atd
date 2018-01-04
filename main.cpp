@@ -55,7 +55,7 @@ int main() {
                     myBase.add_note(urd, gen, defaultNote);
                 }
                 end_time = static_cast<unsigned int>(clock());
-                cout<<"Time: "<<(end_time - start_time)/1000000.0 <<" s."<<endl;
+                cout<<"Time: "<<(end_time - start_time)/1000.0 <<" s."<<endl;
                 break;
             case 6:
                 cout<<"Enter key: ";
